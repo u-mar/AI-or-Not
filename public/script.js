@@ -261,38 +261,60 @@ if (analyzeBtn) {
 
 // Simulate API call (Replace this with your actual API integration)
 async function analyzeFile(file) {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    try {
+        // Get selected model
+        const modelSelect = document.getElementById('modelSelect');
+        const selectedModel = modelSelect ? modelSelect.value : 'logistic';
+        
+        // Convert file to base64
+        const reader = new FileReader();
+        const base64Promise = new Promise((resolve, reject) => {
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1]; // Remove data:image/xxx;base64, prefix
+                resolve(base64);
+            };
+            reader.onerror = reject;
+        });
+        reader.readAsDataURL(file);
+        
+        const base64Image = await base64Promise;
 
-    // TODO: Replace this mock data with actual API call
-    // Example API call structure:
-    /*
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const response = await fetch('YOUR_API_ENDPOINT', {
-        method: 'POST',
-        body: formData
-    });
-    
-    if (!response.ok) {
-        throw new Error('Analysis failed. Please try again.');
+        // Call the Vercel serverless API
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                image: base64Image,
+                model: selectedModel
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Analysis failed' }));
+            throw new Error(errorData.error || 'Analysis failed. Please try again.');
+        }
+
+        const result = await response.json();
+        
+        // Transform API response to match expected format
+        const isAI = result.prediction === 'AI-Generated';
+        const confidence = result.confidence;
+        
+        return {
+            isAI: isAI,
+            confidence: confidence,
+            model: selectedModel,
+            details: isAI 
+                ? 'Our analysis detected patterns consistent with AI-generated content. This includes artifacts typical of generative models, unnatural textures, and inconsistent lighting patterns.'
+                : 'Our analysis suggests this content is likely authentic. The image exhibits natural characteristics, consistent metadata, and organic imperfections typical of real-world capture.'
+        };
+        
+    } catch (error) {
+        console.error('Analysis error:', error);
+        throw new Error(error.message || 'Failed to analyze the image. Please try again.');
     }
-    
-    return await response.json();
-    */
-
-    // Mock response (remove this when you have a real API)
-    const isAI = Math.random() > 0.5;
-    const confidence = (Math.random() * 30 + 70).toFixed(1); // Random confidence between 70-100%
-
-    return {
-        isAI: isAI,
-        confidence: parseFloat(confidence),
-        details: isAI 
-            ? 'Our analysis detected patterns consistent with AI-generated content. This includes artifacts typical of generative models, unnatural textures, and inconsistent lighting patterns.'
-            : 'Our analysis suggests this content is likely authentic. The image exhibits natural characteristics, consistent metadata, and organic imperfections typical of real-world capture.'
-    };
 }
 
 // Display analysis results
@@ -302,6 +324,7 @@ function displayResults(result) {
     const isAI = result.isAI;
     const confidence = result.confidence;
     const details = result.details;
+    const modelName = result.model === 'logistic' ? 'Logistic Regression' : result.model || 'Unknown';
 
     const resultHTML = `
         <div style="display: flex; align-items: start; gap: 2rem; margin-bottom: 2rem;">
@@ -314,9 +337,14 @@ function displayResults(result) {
                 <h3 style="font-size: 1.75rem; margin-bottom: 0.75rem; color: var(--dark);">
                     ${isAI ? 'AI-Generated Content Detected' : 'Authentic Content Detected'}
                 </h3>
-                <p style="color: var(--gray); margin-bottom: 1rem;">
-                    <strong>Confidence Score:</strong> ${confidence}%
-                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                    <p style="color: var(--gray); margin: 0;">
+                        <strong>Confidence:</strong> ${confidence}%
+                    </p>
+                    <p style="color: var(--gray); margin: 0;">
+                        <strong>Model:</strong> ${modelName}
+                    </p>
+                </div>
                 <div style="width: 100%; height: 12px; background: var(--gray-lighter); border-radius: 999px; overflow: hidden; margin-bottom: 1.5rem;">
                     <div style="height: 100%; width: ${confidence}%; background: ${isAI ? 'linear-gradient(90deg, #ef4444, #fca5a5)' : 'linear-gradient(90deg, #10b981, #6ee7b7)'}; transition: width 1s ease;"></div>
                 </div>

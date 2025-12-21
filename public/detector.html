@@ -42,6 +42,18 @@
             <div class="detector-wrapper-modern">
                 <!-- Upload Section -->
                 <div class="upload-section-modern" id="uploadSection">
+                    <!-- Model Selector -->
+                    <div class="model-selector-container">
+                        <label for="modelSelect" class="model-selector-label">
+                            <i class="fas fa-brain"></i> Select Detection Model
+                        </label>
+                        <select id="modelSelect" class="model-selector">
+                            <option value="logistic" selected>Logistic Regression (Fast & Accurate)</option>
+                            <option value="neural" disabled>Neural Network (Coming Soon)</option>
+                            <option value="ensemble" disabled>Ensemble Model (Coming Soon)</option>
+                        </select>
+                    </div>
+
                     <div class="upload-area-modern" id="uploadArea">
                         <div class="upload-icon-modern">
                             <i class="fas fa-cloud-upload-alt"></i>
