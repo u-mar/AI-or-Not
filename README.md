@@ -51,34 +51,18 @@ Deepfakes and AI-generated content pose serious threats to:
 
 ```
 AI-or-Not/
-├── index.html          # Landing page with hero, features, and CTA
-├── detector.html       # AI detection tool page
-├── about.html          # About us page
-├── contact.html        # Contact form page
-├── styles.css          # Modern, beautiful CSS styling
-├── script.js           # JavaScript functionality
-├── assets/             # Folder for images and media (optional)
-└── README.md           # This file
+├── public/
+│   ├── index.html       # Landing page with hero, features, and AI challenge
+│   ├── detector.html    # AI detection tool page
+│   ├── about.html       # About us page
+│   ├── contact.html     # Contact form page
+│   ├── styles.css       # Modern, beautiful CSS styling
+│   └── script.js        # JavaScript functionality
+├── vercel.json          # Vercel deployment configuration
+├── DEPLOYMENT.md        # Deployment instructions
+└── README.md            # This file
 ```
 
-## 🛠️ Setup Instructions
-
-1. **Clone or download this repository**
-
-2. **Open the project**
-   - Simply open `index.html` in any modern web browser
-   - Or use a local development server (recommended):
-     ```bash
-     # Using Python 3
-     python -m http.server 8000
-     
-     # Using Node.js http-server
-     npx http-server
-     ```
-
-3. **View the website**
-   - Navigate to `http://localhost:8000` (or whatever port you chose)
-   - Or just double-click `index.html` to open in your default browser
 
 ## 🔌 API Integration
 
@@ -207,24 +191,27 @@ All colors are defined as CSS variables in `styles.css`. Modify the `:root` sect
 - Edge (latest)
 - Mobile browsers
 
-## �️ Setup Instructions
+## 🛠️ Setup Instructions
 
 1. **Clone or download this repository**
 
 2. **Open the project**
-   - Simply open `index.html` in any modern web browser
+   - Simply open `public/index.html` in any modern web browser
    - Or use a local development server (recommended):
      ```bash
      # Using Python 3
+     cd AI-or-Not
      python -m http.server 8000
+     
+     # Then navigate to: http://localhost:8000/public/
      
      # Using Node.js http-server
      npx http-server
      ```
 
 3. **View the website**
-   - Navigate to `http://localhost:8000`
-   - Or just double-click `index.html`
+   - Navigate to `http://localhost:8000/public/`
+   - Or just double-click `public/index.html`
 
 ## 🚀 Deployment
 
