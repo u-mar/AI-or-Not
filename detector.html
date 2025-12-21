@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Detector - AI or Not</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <span>AI or Not</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="detector.html" class="nav-link active">Detector</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Detector Page -->
+    <section class="detector-page">
+        <div class="container">
+            <div class="detector-header">
+                <h1>AI Content Detector</h1>
+                <p>Upload your image or video to discover if it's AI-generated or authentic</p>
+            </div>
+
+            <div class="detector-wrapper-modern">
+                <!-- Upload Section -->
+                <div class="upload-section-modern" id="uploadSection">
+                    <div class="upload-area-modern" id="uploadArea">
+                        <div class="upload-icon-modern">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Drag & Drop Your File Here</h3>
+                        <p>or click to browse from your device</p>
+                        <div class="supported-formats">
+                            <span><i class="fas fa-image"></i> JPEG, PNG, GIF, WebP</span>
+                            <span><i class="fas fa-video"></i> MP4, AVI, MOV, WebM</span>
+                        </div>
+                        <input type="file" id="fileInput" accept="image/*,video/*" hidden>
+                        <button class="btn-upload" id="browseBtn">
+                            <i class="fas fa-folder-open"></i> Choose File
+                        </button>
+                        <div class="upload-note">
+                            <i class="fas fa-info-circle"></i>
+                            Maximum file size: 50MB
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="preview-section-modern" id="previewSection" style="display: none;">
+                    <div class="preview-header-modern">
+                        <h3><i class="fas fa-eye"></i> Preview</h3>
+                        <button class="btn-change" id="changeFileBtn">
+                            <i class="fas fa-exchange-alt"></i> Change File
+                        </button>
+                    </div>
+                    <div class="preview-container-modern" id="previewContainer"></div>
+                    <div class="file-info" id="fileInfo"></div>
+                    <button class="btn-analyze" id="analyzeBtn">
+                        <i class="fas fa-search"></i>
+                        <span>Analyze Content</span>
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div class="results-section-modern" id="resultsSection" style="display: none;">
+                    <div class="results-header-modern">
+                        <h3><i class="fas fa-chart-bar"></i> Analysis Results</h3>
+                    </div>
+                    <div class="results-content-modern" id="resultsContent">
+                        <!-- Results will be displayed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="info-cards-grid">
+                <div class="info-card">
+                    <i class="fas fa-shield-check"></i>
+                    <h4>Secure Processing</h4>
+                    <p>Your files are processed securely and never stored on our servers</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h4>Fast Analysis</h4>
+                    <p>Get results in seconds with our optimized AI algorithms</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-award"></i>
+                    <h4>High Accuracy</h4>
+                    <p>99.5% accuracy rate backed by advanced neural networks</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-brain"></i>
+                        <span>AI or Not</span>
+                    </div>
+                    <p>Advanced AI detection platform helping you distinguish between artificial and authentic content.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="detector.html">Detector</a></li>
+                        <li><a href="#">API</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="#">Disclaimer</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 AI or Not. All rights reserved.</p>
+                <p>Built with <i class="fas fa-heart"></i> for digital transparency</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - AI or Not</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <span>AI or Not</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="detector.html" class="nav-link">Detector</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                    <li><a href="contact.html" class="nav-link active">Contact</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contact Hero -->
+    <section class="contact-hero-modern">
+        <div class="container">
+            <div class="contact-hero-content-modern">
+                <h1>Let's Start a <span class="gradient-text">Conversation</span></h1>
+                <p class="lead">Have questions about our platform? Need enterprise solutions? Want to partner with us? We're here to help. Reach out and let's make digital content more transparent together.</p>
+                <div class="hero-features">
+                    <div class="feature-badge">
+                        <i class="fas fa-clock"></i>
+                        <span>Response within 24 hours</span>
+                    </div>
+                    <div class="feature-badge">
+                        <i class="fas fa-comments"></i>
+                        <span>Dedicated support team</span>
+                    </div>
+                    <div class="feature-badge">
+                        <i class="fas fa-shield-check"></i>
+                        <span>Secure communication</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-main-section-modern">
+        <div class="container">
+            <div class="contact-layout-modern">
+                <!-- Contact Form -->
+                <div class="contact-form-container-modern">
+                    <div class="form-header-modern">
+                        <h2>Send Us a Message</h2>
+                        <p>Fill out the form below and our team will get back to you within 24 hours.</p>
+                    </div>
+                    <form id="contactForm" class="contact-form-modern">
+                        <div class="form-row">
+                            <div class="form-group-modern">
+                                <label for="firstName">
+                                    <i class="fas fa-user"></i>
+                                    First Name *
+                                </label>
+                                <input type="text" id="firstName" name="firstName" placeholder="John" required>
+                            </div>
+                            <div class="form-group-modern">
+                                <label for="lastName">
+                                    <i class="fas fa-user"></i>
+                                    Last Name *
+                                </label>
+                                <input type="text" id="lastName" name="lastName" placeholder="Doe" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group-modern">
+                            <label for="email">
+                                <i class="fas fa-envelope"></i>
+                                Email Address *
+                            </label>
+                            <input type="email" id="email" name="email" placeholder="john.doe@example.com" required>
+                        </div>
+                        
+                        <div class="form-group-modern">
+                            <label for="phone">
+                                <i class="fas fa-phone"></i>
+                                Phone Number
+                            </label>
+                            <input type="tel" id="phone" name="phone" placeholder="+1 (555) 000-0000">
+                        </div>
+                        
+                        <div class="form-group-modern">
+                            <label for="subject">
+                                <i class="fas fa-tag"></i>
+                                Subject *
+                            </label>
+                            <select id="subject" name="subject" required>
+                                <option value="">Select a subject</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="support">Technical Support</option>
+                                <option value="enterprise">Enterprise Solutions</option>
+                                <option value="partnership">Partnership Opportunities</option>
+                                <option value="feedback">Feedback & Suggestions</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group-modern">
+                            <label for="message">
+                                <i class="fas fa-comment-dots"></i>
+                                Your Message *
+                            </label>
+                            <textarea id="message" name="message" rows="6" placeholder="Tell us how we can help you..." required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn-submit-modern">
+                            <span>Send Message</span>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Contact Information Sidebar -->
+                <div class="contact-sidebar-modern">
+                    <div class="contact-info-card">
+                        <h3>Contact Information</h3>
+                        <p>Choose your preferred way to reach us</p>
+                        
+                        <div class="contact-methods">
+                            <a href="mailto:contact@aiornot.com" class="contact-method">
+                                <div class="method-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="method-details">
+                                    <h4>Email Us</h4>
+                                    <p>contact@aiornot.com</p>
+                                    <span class="method-tag">Most Popular</span>
+                                </div>
+                            </a>
+                            
+                            <a href="tel:+15551234567" class="contact-method">
+                                <div class="method-icon">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div class="method-details">
+                                    <h4>Call Us</h4>
+                                    <p>+1 (555) 123-4567</p>
+                                    <span class="method-tag">Mon-Fri, 9AM-6PM EST</span>
+                                </div>
+                            </a>
+                            
+                            <div class="contact-method">
+                                <div class="method-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="method-details">
+                                    <h4>Visit Us</h4>
+                                    <p>123 AI Street<br>Tech Valley, CA 94000</p>
+                                </div>
+                            </div>
+                            
+                            <div class="contact-method">
+                                <div class="method-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="method-details">
+                                    <h4>Business Hours</h4>
+                                    <p>Monday - Friday<br>9:00 AM - 6:00 PM EST</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="social-card-modern">
+                        <h4>Follow Us</h4>
+                        <p>Stay updated with our latest news</p>
+                        <div class="social-links-modern">
+                            <a href="#" class="social-link-modern twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="social-link-modern facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="social-link-modern linkedin">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="social-link-modern github">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="#" class="social-link-modern instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section-modern">
+        <div class="container">
+            <div class="section-header-center">
+                <div class="section-tag">FAQ</div>
+                <h2>Frequently Asked <span class="gradient-text">Questions</span></h2>
+                <p>Quick answers to questions you may have</p>
+            </div>
+            <div class="faq-grid-modern">
+                <div class="faq-item-modern">
+                    <div class="faq-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <h4>How accurate is the AI detection?</h4>
+                    <p>Our platform boasts a 99.5% accuracy rate, backed by extensive testing and validation across millions of images and videos from various AI generation models.</p>
+                </div>
+                <div class="faq-item-modern">
+                    <div class="faq-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4>Is my data stored on your servers?</h4>
+                    <p>No, we prioritize your privacy. Files are processed in real-time and immediately deleted after analysis. We never store your uploaded content.</p>
+                </div>
+                <div class="faq-item-modern">
+                    <div class="faq-icon">
+                        <i class="fas fa-file-image"></i>
+                    </div>
+                    <h4>What file formats do you support?</h4>
+                    <p>We support all major image formats (JPEG, PNG, GIF, WebP) and video formats (MP4, AVI, MOV, WebM) up to 50MB in size.</p>
+                </div>
+                <div class="faq-item-modern">
+                    <div class="faq-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h4>Do you offer an API for businesses?</h4>
+                    <p>Yes! We provide comprehensive API access for businesses and developers. Contact our sales team to learn more about enterprise solutions.</p>
+                </div>
+                <div class="faq-item-modern">
+                    <div class="faq-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <h4>What are your pricing plans?</h4>
+                    <p>We offer a free tier for individual users and flexible plans for businesses. Visit our pricing page or contact sales for custom enterprise solutions.</p>
+                </div>
+                <div class="faq-item-modern">
+                    <div class="faq-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h4>How can I get support?</h4>
+                    <p>We offer 24/7 email support, live chat during business hours, and dedicated account managers for enterprise customers. Response time is typically under 24 hours.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-brain"></i>
+                        <span>AI or Not</span>
+                    </div>
+                    <p>Advanced AI detection platform helping you distinguish between artificial and authentic content.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="detector.html">Detector</a></li>
+                        <li><a href="#">API</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="#">Disclaimer</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 AI or Not. All rights reserved.</p>
+                <p>Built with <i class="fas fa-heart"></i> for digital transparency</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

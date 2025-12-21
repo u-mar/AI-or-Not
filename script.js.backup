@@ -1,0 +1,388 @@
+// ===== NAVBAR FUNCTIONALITY =====
+const navbar = document.querySelector('.navbar');
+const navLinks = document.querySelector('.nav-links');
+const hamburger = document.querySelector('.hamburger');
+const navLinkItems = document.querySelectorAll('.nav-link');
+
+// Hamburger menu toggle
+hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    hamburger.classList.toggle('active');
+});
+
+// Close menu when clicking nav links
+navLinkItems.forEach(link => {
+    link.addEventListener('click', () => {
+        navLinks.classList.remove('active');
+        hamburger.classList.remove('active');
+    });
+});
+
+// Navbar scroll effect
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+        navbar.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+    } else {
+        navbar.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+    }
+});
+
+// Active nav link on scroll
+const sections = document.querySelectorAll('section[id]');
+
+function activateNavLink() {
+    const scrollY = window.pageYOffset;
+
+    sections.forEach(section => {
+        const sectionHeight = section.offsetHeight;
+        const sectionTop = section.offsetTop - 100;
+        const sectionId = section.getAttribute('id');
+        const navLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+
+        if (navLink) {
+            if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                navLink.classList.add('active');
+            } else {
+                navLink.classList.remove('active');
+            }
+        }
+    });
+}
+
+window.addEventListener('scroll', activateNavLink);
+
+// ===== FILE UPLOAD FUNCTIONALITY =====
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const browseBtn = document.getElementById('browseBtn');
+const previewSection = document.getElementById('previewSection');
+const previewContainer = document.getElementById('previewContainer');
+const changeFileBtn = document.getElementById('changeFileBtn');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const resultsSection = document.getElementById('resultsSection');
+const resultsContent = document.getElementById('resultsContent');
+
+let currentFile = null;
+
+// Browse button click
+browseBtn.addEventListener('click', () => {
+    fileInput.click();
+});
+
+// Upload area click
+uploadArea.addEventListener('click', () => {
+    fileInput.click();
+});
+
+// File input change
+fileInput.addEventListener('change', (e) => {
+    handleFileSelect(e.target.files[0]);
+});
+
+// Drag and drop functionality
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    
+    const file = e.dataTransfer.files[0];
+    handleFileSelect(file);
+});
+
+// Handle file selection
+function handleFileSelect(file) {
+    if (!file) return;
+
+    // Validate file type
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const validVideoTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/webm'];
+    const allValidTypes = [...validImageTypes, ...validVideoTypes];
+
+    if (!allValidTypes.includes(file.type)) {
+        alert('Please select a valid image or video file (JPEG, PNG, GIF, MP4, AVI, MOV)');
+        return;
+    }
+
+    // Validate file size (max 50MB)
+    const maxSize = 50 * 1024 * 1024; // 50MB in bytes
+    if (file.size > maxSize) {
+        alert('File size must be less than 50MB');
+        return;
+    }
+
+    currentFile = file;
+    displayPreview(file);
+    
+    // Hide upload area and show preview
+    uploadArea.style.display = 'none';
+    previewSection.style.display = 'block';
+    resultsSection.style.display = 'none';
+}
+
+// Display file preview
+function displayPreview(file) {
+    previewContainer.innerHTML = '';
+
+    const fileType = file.type.split('/')[0];
+
+    if (fileType === 'image') {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.alt = 'Preview';
+        previewContainer.appendChild(img);
+    } else if (fileType === 'video') {
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(file);
+        video.controls = true;
+        previewContainer.appendChild(video);
+    }
+}
+
+// Change file button
+changeFileBtn.addEventListener('click', () => {
+    uploadArea.style.display = 'block';
+    previewSection.style.display = 'none';
+    resultsSection.style.display = 'none';
+    currentFile = null;
+    fileInput.value = '';
+    previewContainer.innerHTML = '';
+});
+
+// Analyze button
+analyzeBtn.addEventListener('click', async () => {
+    if (!currentFile) return;
+
+    // Show loading state
+    resultsSection.style.display = 'block';
+    resultsContent.innerHTML = `
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Analyzing your media... This may take a few moments.</p>
+        </div>
+    `;
+
+    // Scroll to results
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    try {
+        // TODO: Replace this with your actual API call
+        // This is a placeholder that simulates an API call
+        const result = await analyzeFile(currentFile);
+        displayResults(result);
+    } catch (error) {
+        displayError(error.message);
+    }
+});
+
+// Simulate API call (Replace this with your actual API integration)
+async function analyzeFile(file) {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // TODO: Replace this mock data with actual API call
+    // Example API call structure:
+    /*
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch('YOUR_API_ENDPOINT', {
+        method: 'POST',
+        body: formData
+    });
+    
+    if (!response.ok) {
+        throw new Error('Analysis failed. Please try again.');
+    }
+    
+    return await response.json();
+    */
+
+    // Mock response (remove this when you have a real API)
+    const isAI = Math.random() > 0.5;
+    const confidence = (Math.random() * 30 + 70).toFixed(1); // Random confidence between 70-100%
+
+    return {
+        isAI: isAI,
+        confidence: parseFloat(confidence),
+        details: isAI 
+            ? 'Our analysis detected patterns consistent with AI-generated content. This includes artifacts typical of generative models, unnatural textures, and inconsistent lighting patterns.'
+            : 'Our analysis suggests this content is likely authentic. The image exhibits natural characteristics, consistent metadata, and organic imperfections typical of real-world capture.'
+    };
+}
+
+// Display analysis results
+function displayResults(result) {
+    const isAI = result.isAI;
+    const confidence = result.confidence;
+    const details = result.details;
+
+    const resultHTML = `
+        <div class="result-item">
+            <div class="result-icon ${isAI ? 'ai' : 'real'}">
+                <i class="fas ${isAI ? 'fa-robot' : 'fa-camera'}"></i>
+            </div>
+            <div class="result-details" style="flex: 1;">
+                <h4>${isAI ? 'AI-Generated Content Detected' : 'Authentic Content Detected'}</h4>
+                <p><strong>Confidence Score:</strong> ${confidence}%</p>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" style="width: ${confidence}%"></div>
+                </div>
+                <p style="margin-top: 1rem;">${details}</p>
+            </div>
+        </div>
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--gray-lighter);">
+            <h4 style="margin-bottom: 1rem;">What does this mean?</h4>
+            <p style="color: var(--gray); line-height: 1.7;">
+                ${isAI 
+                    ? 'This media appears to have been created or heavily modified using artificial intelligence. While our model is highly accurate, we recommend considering the context and source when making important decisions based on this analysis.'
+                    : 'This media appears to be authentic and captured using traditional methods. Our analysis found natural patterns and characteristics consistent with real-world content. However, always verify important content through multiple sources.'
+                }
+            </p>
+        </div>
+        <button class="btn btn-primary btn-full mt-4" onclick="analyzeAnother()">
+            <i class="fas fa-redo"></i> Analyze Another File
+        </button>
+    `;
+
+    resultsContent.innerHTML = resultHTML;
+}
+
+// Display error
+function displayError(message) {
+    resultsContent.innerHTML = `
+        <div class="result-item" style="border-left: 4px solid var(--error);">
+            <div class="result-icon" style="color: var(--error);">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="result-details">
+                <h4>Analysis Failed</h4>
+                <p>${message}</p>
+                <button class="btn btn-primary mt-3" onclick="analyzeBtn.click()">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Analyze another file
+function analyzeAnother() {
+    uploadArea.style.display = 'block';
+    previewSection.style.display = 'none';
+    resultsSection.style.display = 'none';
+    currentFile = null;
+    fileInput.value = '';
+    previewContainer.innerHTML = '';
+    resultsContent.innerHTML = '';
+    
+    // Scroll to detector section
+    document.getElementById('detector').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Make analyzeAnother globally accessible
+window.analyzeAnother = analyzeAnother;
+
+// ===== CONTACT FORM =====
+const contactForm = document.getElementById('contactForm');
+
+contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        subject: document.getElementById('subject').value,
+        message: document.getElementById('message').value
+    };
+
+    // TODO: Replace with your actual contact form submission logic
+    // Example:
+    /*
+    try {
+        const response = await fetch('YOUR_CONTACT_API_ENDPOINT', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            alert('Thank you for your message! We will get back to you soon.');
+            contactForm.reset();
+        } else {
+            throw new Error('Failed to send message');
+        }
+    } catch (error) {
+        alert('Sorry, there was an error sending your message. Please try again later.');
+    }
+    */
+
+    // Temporary mock submission
+    console.log('Form submitted:', formData);
+    alert('Thank you for your message! We will get back to you soon.\n\n(Note: This is a demo. Connect your backend to actually send messages.)');
+    contactForm.reset();
+});
+
+// ===== SMOOTH SCROLL FOR ALL ANCHOR LINKS =====
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        
+        // Don't prevent default for links that just use # as a placeholder
+        if (href === '#' || !href) return;
+        
+        e.preventDefault();
+        const target = document.querySelector(href);
+        
+        if (target) {
+            const offsetTop = target.offsetTop - 80; // Account for fixed navbar
+            window.scrollTo({
+                top: offsetTop,
+                behavior: 'smooth'
+            });
+        }
+    });
+});
+
+// ===== SCROLL REVEAL ANIMATIONS =====
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Observe feature cards, step cards, etc.
+document.addEventListener('DOMContentLoaded', () => {
+    const animatedElements = document.querySelectorAll('.feature-card, .step-card, .contact-item');
+    
+    animatedElements.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+});
+
+// ===== CONSOLE MESSAGE =====
+console.log('%c🧠 AI or Not - Frontend Ready!', 'color: #6366f1; font-size: 20px; font-weight: bold;');
+console.log('%cRemember to connect your AI model API to the analyzeFile() function in script.js', 'color: #8b5cf6; font-size: 14px;');
+console.log('%cAPI Integration Points:', 'color: #06b6d4; font-size: 14px; font-weight: bold;');
+console.log('1. File Analysis: script.js -> analyzeFile() function');
+console.log('2. Contact Form: script.js -> contactForm submit handler');
