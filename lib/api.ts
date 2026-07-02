@@ -58,13 +58,11 @@ export async function analyzeImage(
       isAI,
       confidence: Math.round(result.confidence * 10) / 10,
       prediction: isAI ? 'AI GENERATED' : 'REAL',
-      model: result.model || model,
+      model: 'engine',
       modelName: APP_CONFIG.modelName,
-      details:
-        result.details ||
-        (isAI
-          ? `Analysis detected AI-generated patterns (${result.confidence}% confidence).`
-          : `Analysis suggests authentic content (${result.confidence}% confidence).`),
+      details: result.details || (isAI
+        ? `This image shows signs of AI generation (${Math.round(result.confidence)}% confidence).`
+        : `This image appears to be authentic (${Math.round(result.confidence)}% confidence).`),
       duration,
       timestamp: new Date().toISOString(),
     };

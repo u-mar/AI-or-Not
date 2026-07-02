@@ -6,8 +6,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0B1020",
-  "theme_color": "#0B1020",
+  "background_color": "#F1F5F9",
+  "theme_color": "#F1F5F9",
   "categories": ["utilities", "education"],
   "icons": [
     {
@@ -34,7 +34,7 @@
     {
       "name": "Analyze Image",
       "short_name": "Detect",
-      "url": "/detector",
+      "url": "/",
       "icons": [{ "src": "/icons/icon.svg", "sizes": "any" }]
     },
     {

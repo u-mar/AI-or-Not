@@ -1,6 +1,6 @@
 import { APP_CONFIG, type HistoryItem, type Settings, type Theme } from './config';
 
-const defaultSettings: Settings = { theme: 'dark', notifications: true };
+const defaultSettings: Settings = { theme: 'light', notifications: true };
 
 export function getSettings(): Settings {
   if (typeof window === 'undefined') return defaultSettings;

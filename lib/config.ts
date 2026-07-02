@@ -1,10 +1,10 @@
 export const APP_CONFIG = {
   name: 'AI or Not',
   version: '2.0.0',
-  modelVersion: '1.0.0',
-  modelName: 'Logistic Regression',
+  modelVersion: '2.0.0',
+  modelName: 'AI Detection Engine',
   apiEndpoint: '/api/predict',
-  apiTimeout: 30000,
+  apiTimeout: 60000,
   maxRetries: 2,
   maxFileSize: 10 * 1024 * 1024,
   validImageTypes: ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'],
@@ -15,12 +15,12 @@ export const APP_CONFIG = {
   sessionDays: 30,
   maxHistoryItems: 100,
   analysisSteps: [
-    'Scanning image...',
-    'Extracting features...',
-    'Analyzing texture...',
-    'Checking edges...',
-    'Evaluating statistical properties...',
-    'Generating prediction...',
+    'Preparing image...',
+    'Running deep analysis...',
+    'Scanning visual patterns...',
+    'Checking authenticity signals...',
+    'Verifying results...',
+    'Complete',
   ],
 } as const;
 
