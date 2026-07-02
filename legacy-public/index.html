@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="AI or Not — Detect whether images are real or AI-generated using machine learning.">
+  <meta name="theme-color" content="#0B1020">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>AI or Not — Can You Trust What You See?</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="home">
+  <div class="nav-overlay" aria-hidden="true"></div>
+
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="index.html" class="logo" aria-label="AI or Not home">
+        <span class="logo-icon" aria-hidden="true">🧠</span>
+        <span>AI or Not</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="detector.html" class="nav-link">Detector</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="contact.html" class="nav-link">Contact</a></li>
+        <li><a href="settings.html" class="nav-link">Settings</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button id="installBtn" class="btn btn-ghost" hidden aria-label="Install app">Install</button>
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container hero-content">
+      <div class="hero-badge reveal">✨ Powered by Machine Learning</div>
+      <h1 class="reveal">AI or Not</h1>
+      <p class="hero-subtitle reveal">Can You Trust What You See?</p>
+      <p class="hero-desc reveal">
+        Upload any image and instantly discover whether it's authentic photography or AI-generated content.
+        Our logistic regression model analyzes texture, edges, and statistical patterns to deliver fast, reliable predictions.
+      </p>
+      <div class="hero-cta reveal">
+        <a href="detector.html" class="btn btn-primary btn-lg btn-ripple">Analyze Image</a>
+        <a href="#how-it-works" class="btn btn-secondary btn-lg">Learn More</a>
+      </div>
+      <div class="hero-stats reveal">
+        <div class="stat-card glass-card">
+          <div class="stat-value"><span data-counter="99.5" data-suffix="%">0</span></div>
+          <div class="stat-label">Detection Accuracy</div>
+        </div>
+        <div class="stat-card glass-card">
+          <div class="stat-value"><span data-counter="205">0</span></div>
+          <div class="stat-label">Features Analyzed</div>
+        </div>
+        <div class="stat-card glass-card">
+          <div class="stat-value"><span data-counter="6">0</span>s</div>
+          <div class="stat-label">Avg. Analysis Time</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Features</span>
+        <h2>Everything You Need to <span class="text-gradient">Verify Images</span></h2>
+        <p>A complete toolkit for detecting AI-generated content, built for speed, privacy, and accuracy.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">🔍</div>
+          <h3>Instant Analysis</h3>
+          <p>Upload an image and get results in seconds with our optimized feature extraction pipeline.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">🛡️</div>
+          <h3>Privacy First</h3>
+          <p>Images are processed securely. Scan history is stored locally on your device only.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">📊</div>
+          <h3>Confidence Scores</h3>
+          <p>Detailed confidence percentages help you understand how certain the model prediction is.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">📱</div>
+          <h3>Works Everywhere</h3>
+          <p>Install as a PWA on your phone or use in any modern browser. Fully responsive design.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">📜</div>
+          <h3>Scan History</h3>
+          <p>Review past analyses with thumbnails, predictions, and timestamps. Search and filter anytime.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">⚡</div>
+          <h3>Lightweight Model</h3>
+          <p>Logistic regression on handcrafted features — fast inference without heavy GPU requirements.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how-it-works" style="background: var(--bg-elevated);">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">How It Works</span>
+        <h2>From Upload to <span class="text-gradient">Prediction</span></h2>
+        <p>Our machine learning pipeline analyzes images through multiple stages of feature extraction.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card glass-card reveal">
+          <div class="step-num">1</div>
+          <h3>Upload Image</h3>
+          <p>Drag and drop or select a PNG, JPEG, or WEBP image up to 10MB.</p>
+        </div>
+        <div class="step-card glass-card reveal">
+          <div class="step-num">2</div>
+          <h3>Extract Features</h3>
+          <p>Color histograms, edge detection, texture analysis, and statistical properties are computed.</p>
+        </div>
+        <div class="step-card glass-card reveal">
+          <div class="step-num">3</div>
+          <h3>Model Prediction</h3>
+          <p>Logistic regression classifies the feature vector as Real or AI-Generated.</p>
+        </div>
+        <div class="step-card glass-card reveal">
+          <div class="step-num">4</div>
+          <h3>View Results</h3>
+          <p>See the prediction, confidence score, analysis time, and save to your local history.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="benefits">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Benefits</span>
+        <h2>Why <span class="text-gradient">AI or Not</span>?</h2>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">🎓</div>
+          <h3>Educational</h3>
+          <p>Learn how machine learning detects AI-generated images through transparent feature analysis.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">🔒</div>
+          <h3>Secure</h3>
+          <p>Client-side validation, restricted file types, and safe API error handling.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">🌐</div>
+          <h3>Accessible</h3>
+          <p>Keyboard navigation, ARIA labels, screen reader support, and high contrast design.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq" style="background: var(--bg-elevated);">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">FAQ</span>
+        <h2>Frequently Asked <span class="text-gradient">Questions</span></h2>
+      </div>
+      <div class="faq-list reveal">
+        <details class="faq-item">
+          <summary>What image formats are supported?</summary>
+          <p>We support PNG, JPEG, JPG, and WEBP images up to 10MB in size.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How accurate is the detection?</summary>
+          <p>Accuracy depends on training data quality. Our logistic regression model typically achieves 75–90% accuracy with a balanced dataset of 500+ images per class.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Are my images stored on a server?</summary>
+          <p>Images are sent to the API for analysis but are not permanently stored. Scan history with thumbnails is saved locally on your device only.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Can I install this as an app?</summary>
+          <p>Yes! AI or Not is a Progressive Web App. Install it from Chrome on Android or add to your home screen on iOS.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What model is used?</summary>
+          <p>We use logistic regression trained on handcrafted features including color histograms, Canny edge density, Sobel texture gradients, and statistical color moments.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contact-cta">
+    <div class="container" style="text-align: center;">
+      <div class="section-header reveal">
+        <span class="section-tag">Get Started</span>
+        <h2>Ready to <span class="text-gradient">Verify</span>?</h2>
+        <p>Start analyzing images now or reach out with questions and feedback.</p>
+      </div>
+      <div class="hero-cta reveal">
+        <a href="detector.html" class="btn btn-primary btn-lg btn-ripple">Analyze Image</a>
+        <a href="contact.html" class="btn btn-secondary btn-lg">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="logo"><span class="logo-icon">🧠</span><span>AI or Not</span></a>
+          <p>Detect AI-generated images with machine learning. Built as a final-year university project.</p>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="GitHub">GH</a>
+            <a href="#" class="social-link" aria-label="LinkedIn">in</a>
+            <a href="#" class="social-link" aria-label="Email">@</a>
+          </div>
+        </div>
+        <div>
+          <h4>Product</h4>
+          <ul class="footer-links">
+            <li><a href="detector.html">Detector</a></li>
+            <li><a href="history.html">History</a></li>
+            <li><a href="settings.html">Settings</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <ul class="footer-links">
+            <li><a href="settings.html#privacy">Privacy Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 AI or Not. All rights reserved.</span>
+        <span>v2.0.0</span>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

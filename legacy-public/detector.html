@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Upload an image to detect if it's real or AI-generated.">
+  <meta name="theme-color" content="#0B1020">
+  <title>Detector — AI or Not</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="detector">
+  <div class="nav-overlay" aria-hidden="true"></div>
+
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="index.html" class="logo"><span class="logo-icon">🧠</span><span>AI or Not</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="detector.html" class="nav-link">Detector</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="contact.html" class="nav-link">Contact</a></li>
+        <li><a href="settings.html" class="nav-link">Settings</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>Image Detector</h1>
+      <p>Upload an image to analyze whether it's real photography or AI-generated content.</p>
+    </div>
+  </header>
+
+  <main class="detector-main">
+    <div class="container">
+      <div class="detector-card glass-card">
+        <!-- Upload -->
+        <div id="uploadSection">
+          <div class="model-select-wrap">
+            <label for="modelSelect">Detection Model</label>
+            <select id="modelSelect" class="model-select" aria-label="Select detection model">
+              <option value="logistic" selected>Logistic Regression</option>
+            </select>
+          </div>
+
+          <div class="upload-zone" id="uploadArea" role="button" tabindex="0" aria-label="Upload image area. Click or drag and drop an image.">
+            <div class="upload-icon" aria-hidden="true">📤</div>
+            <h3>Drag &amp; Drop Your Image</h3>
+            <p>or click to browse from your device</p>
+            <p class="upload-formats">PNG · JPEG · JPG · WEBP · Max 10MB</p>
+            <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg,image/webp" hidden aria-label="Choose image file">
+            <button type="button" class="btn btn-primary btn-ripple" id="browseBtn">Choose File</button>
+          </div>
+          <div id="validationMsg" class="validation-msg" hidden role="alert"></div>
+        </div>
+
+        <!-- Preview -->
+        <div id="previewSection" hidden>
+          <div class="preview-header">
+            <h3>Image Preview</h3>
+            <button type="button" class="btn btn-ghost" id="removeBtn" aria-label="Remove image">Remove</button>
+          </div>
+          <div class="preview-container" id="previewContainer"></div>
+          <div id="fileInfo"></div>
+          <div class="preview-actions">
+            <button type="button" class="btn btn-primary btn-lg btn-ripple" id="analyzeBtn">
+              Analyze Image
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="resultsSection" hidden aria-live="polite">
+        <div id="resultsContent"></div>
+      </div>
+
+      <!-- Tips -->
+      <div class="feature-grid" style="margin-top: 2rem;">
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">💡</div>
+          <h3>Tips for Spotting AI Images</h3>
+          <p>Look for unnatural hands, inconsistent lighting, blurry text, and overly smooth skin textures.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">🔬</div>
+          <h3>What We Analyze</h3>
+          <p>Color histograms, edge patterns, texture gradients, and statistical color moments across ~205 features.</p>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border: none; padding-top: 0;">
+        <span>&copy; 2026 AI or Not</span>
+        <a href="history.html">View scan history →</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

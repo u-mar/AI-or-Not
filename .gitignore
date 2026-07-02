@@ -10,7 +10,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -66,7 +65,11 @@ logs/
 tmp/
 temp/
 
-# Node modules (if you add any JavaScript tooling)
+# Next.js
+.next/
+out/
+
+# Node modules
 node_modules/
 
 # Vercel

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0B1020">
+  <title>Settings — AI or Not</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="settings">
+  <div class="nav-overlay" aria-hidden="true"></div>
+
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="index.html" class="logo"><span class="logo-icon">🧠</span><span>AI or Not</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="detector.html" class="nav-link">Detector</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="contact.html" class="nav-link">Contact</a></li>
+        <li><a href="settings.html" class="nav-link">Settings</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>Settings</h1>
+      <p>Customize your experience and manage your data.</p>
+    </div>
+  </header>
+
+  <main class="section" style="padding-top: 0;">
+    <div class="container settings-list">
+      <div class="settings-group">
+        <h3>Appearance</h3>
+        <div class="setting-item glass-card">
+          <div class="setting-info">
+            <h4>Light Mode</h4>
+            <p>Switch between dark (default) and light themes</p>
+          </div>
+          <label class="toggle" aria-label="Toggle light mode">
+            <input type="checkbox" id="themeToggle">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>Data</h3>
+        <div class="setting-item glass-card">
+          <div class="setting-info">
+            <h4>Total Scans</h4>
+            <p>Number of analyses stored in local history</p>
+          </div>
+          <span class="setting-value" id="scanCount">0</span>
+        </div>
+        <div class="setting-item glass-card">
+          <div class="setting-info">
+            <h4>Clear History</h4>
+            <p>Remove all saved scan records from this device</p>
+          </div>
+          <button type="button" id="settingsClearHistory" class="btn btn-ghost">Clear</button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>About</h3>
+        <div class="setting-item glass-card">
+          <div class="setting-info">
+            <h4>App Version</h4>
+            <p>Current release of AI or Not</p>
+          </div>
+          <span class="setting-value" id="appVersion">—</span>
+        </div>
+        <div class="setting-item glass-card">
+          <div class="setting-info">
+            <h4>Model Version</h4>
+            <p>Logistic regression detection model</p>
+          </div>
+          <span class="setting-value" id="modelVersion">—</span>
+        </div>
+        <a href="about.html" class="setting-item glass-card contact-link" style="border: none;">
+          <div class="setting-info">
+            <h4>About Project</h4>
+            <p>Learn how detection works and meet the developer</p>
+          </div>
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <div class="settings-group" id="privacy">
+        <h3>Privacy</h3>
+        <div class="setting-item glass-card" style="flex-direction: column; align-items: flex-start;">
+          <h4 style="margin-bottom: 0.5rem;">Privacy Policy</h4>
+          <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.7;">
+            AI or Not processes images through a prediction API for analysis. Images are not permanently stored on servers.
+            Scan history with thumbnails is saved locally in your browser using localStorage. No personal data is collected
+            without your consent. You can clear all local data at any time from this settings page.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border: none; padding-top: 0;">
+        <span>&copy; 2026 AI or Not</span>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

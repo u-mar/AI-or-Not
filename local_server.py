@@ -29,9 +29,12 @@ class LocalHandler(SimpleHTTPRequestHandler):
     
     def do_GET(self):
         """Serve static files from public directory"""
-        # Redirect root to index.html
         if self.path == '/':
             self.path = '/index.html'
+        elif self.path == '/manifest.json':
+            self.path = '/manifest.json'
+        elif self.path == '/service-worker.js':
+            self.path = '/service-worker.js'
         return super().do_GET()
     
     def do_POST(self):
@@ -139,19 +142,19 @@ def run_server(port=8000):
     httpd = HTTPServer(server_address, LocalHandler)
     
     print("\n" + "="*60)
-    print("🚀 AI-or-Not Local Development Server")
+    print("AI-or-Not Local Development Server")
     print("="*60)
-    print(f"\n✓ Server running at: http://localhost:{port}")
-    print(f"✓ Serving files from: ./public/")
-    print(f"✓ API endpoint: http://localhost:{port}/api/predict")
+    print(f"\n[OK] Server running at: http://localhost:{port}")
+    print("[OK] Serving files from: ./public/")
+    print(f"[OK] API endpoint: http://localhost:{port}/api/predict")
     
     # Check if model exists
     model_path = os.path.join(os.path.dirname(__file__), 'api', 'ai_detector_model.pkl')
     if os.path.exists(model_path):
-        print(f"✓ Model loaded: api/ai_detector_model.pkl")
+        print("[OK] Model loaded: api/ai_detector_model.pkl")
     else:
-        print(f"\n⚠️  Warning: Model not found at api/ai_detector_model.pkl")
-        print(f"   The detector will not work until you copy the model file.")
+        print("\n[WARN] Model not found at api/ai_detector_model.pkl")
+        print("       The detector will not work until you copy the model file.")
     
     print("\n" + "="*60)
     print("Press Ctrl+C to stop the server")

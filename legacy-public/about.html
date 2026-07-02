@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0B1020">
+  <title>About — AI or Not</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="about">
+  <div class="nav-overlay" aria-hidden="true"></div>
+
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container nav-inner">
+      <a href="index.html" class="logo"><span class="logo-icon">🧠</span><span>AI or Not</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="detector.html" class="nav-link">Detector</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="contact.html" class="nav-link">Contact</a></li>
+        <li><a href="settings.html" class="nav-link">Settings</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="about-hero">
+    <div class="container">
+      <h1>About <span class="text-gradient">AI or Not</span></h1>
+      <p class="lead">A machine learning platform that helps you distinguish real photographs from AI-generated images — built as a final-year university project.</p>
+    </div>
+  </header>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Overview</span>
+        <h2>Project Mission</h2>
+        <p>As AI image generators become more sophisticated, verifying visual content authenticity is increasingly important. AI or Not provides an accessible, educational tool for detecting AI-generated images using classical machine learning.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background: var(--bg-elevated);">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Pipeline</span>
+        <h2>How Detection <span class="text-gradient">Works</span></h2>
+      </div>
+      <div class="pipeline-steps reveal">
+        <div class="pipeline-step">
+          <div>
+            <h4>1. Image Upload</h4>
+            <p>User uploads a PNG, JPEG, or WEBP image through the web interface.</p>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <div>
+            <h4>2. Feature Extraction</h4>
+            <p>OpenCV extracts ~205 handcrafted features: RGB/HSV color histograms, Canny edge density, Sobel texture gradients, and statistical color moments.</p>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <div>
+            <h4>3. Logistic Regression</h4>
+            <p>A trained logistic regression classifier predicts whether the feature vector represents a real or AI-generated image.</p>
+          </div>
+        </div>
+        <div class="pipeline-step">
+          <div>
+            <h4>4. Result Display</h4>
+            <p>The frontend shows the prediction, confidence score, analysis duration, and saves the result to local history.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Technology</span>
+        <h2>Tech <span class="text-gradient">Stack</span></h2>
+      </div>
+      <div class="tech-grid">
+        <article class="tech-card glass-card reveal">
+          <h3>🖥️ Frontend</h3>
+          <ul>
+            <li>HTML5, CSS3, JavaScript (ES Modules)</li>
+            <li>Progressive Web App (PWA)</li>
+            <li>Glassmorphism UI design</li>
+            <li>localStorage for history</li>
+            <li>Responsive mobile-first layout</li>
+          </ul>
+        </article>
+        <article class="tech-card glass-card reveal">
+          <h3>🤖 Machine Learning</h3>
+          <ul>
+            <li>Python + scikit-learn</li>
+            <li>Logistic Regression classifier</li>
+            <li>OpenCV feature extraction</li>
+            <li>NumPy, Pillow</li>
+            <li>~205 features per image</li>
+          </ul>
+        </article>
+        <article class="tech-card glass-card reveal">
+          <h3>⚙️ Backend &amp; Deployment</h3>
+          <ul>
+            <li>Python serverless API (Vercel)</li>
+            <li>Local dev server (local_server.py)</li>
+            <li>Base64 image transport</li>
+            <li>CORS-enabled endpoints</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background: var(--bg-elevated);">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Future</span>
+        <h2>Planned <span class="text-gradient">Improvements</span></h2>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">🧠</div>
+          <h3>Deep Learning Models</h3>
+          <p>CNN-based classifiers for higher accuracy on modern AI generators.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">🎬</div>
+          <h3>Video Detection</h3>
+          <p>Frame-by-frame analysis for deepfake video detection.</p>
+        </article>
+        <article class="feature-card glass-card reveal">
+          <div class="feature-icon">📡</div>
+          <h3>Batch API</h3>
+          <p>Bulk image analysis endpoint for enterprise use cases.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Developer</span>
+        <h2>Meet the <span class="text-gradient">Developer</span></h2>
+      </div>
+      <div class="dev-card glass-card reveal">
+        <div class="dev-avatar" aria-hidden="true">👨‍💻</div>
+        <div class="dev-info">
+          <h3>Project Developer</h3>
+          <p>Final-year Computer Science student passionate about machine learning, web development, and digital media authenticity.</p>
+          <div class="social-links" style="margin-top: 1rem;">
+            <a href="#" class="social-link" aria-label="GitHub">GH</a>
+            <a href="#" class="social-link" aria-label="LinkedIn">in</a>
+            <a href="contact.html" class="social-link" aria-label="Contact">@</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border: none; padding-top: 0;">
+        <span>&copy; 2026 AI or Not</span>
+        <a href="detector.html">Try the detector →</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
