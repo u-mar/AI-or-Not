@@ -9,10 +9,26 @@ import path from 'path';
 const IS_VERCEL = !!process.env.VERCEL;
 
 const HF_MODELS = [
-  process.env.HF_DETECTION_MODEL || 'dima806/ai_vs_real_image_detection',
-  'boluobobo/ItsNotAI-ai-detector-v2',
-  'umm-maybe/AI-image-detector',
+  ...new Set(
+    [
+      process.env.HF_DETECTION_MODEL,
+      'Ateeqq/ai-vs-human-image-detector',
+      'umm-maybe/AI-image-detector',
+      'dima806/ai_vs_real_image_detection',
+    ].filter((m): m is string => !!m)
+  ),
 ];
+
+/** Minimum AI score (0–1) before labeling as AI-generated */
+const AI_THRESHOLD = Number(process.env.AI_DETECTION_THRESHOLD ?? '0.58');
+
+const REAL_LABELS = new Set([
+  'real', 'human', 'hum', 'genuine', 'authentic', 'natural', 'photo', '0', 'label_0',
+]);
+const AI_LABELS = new Set([
+  'ai', 'fake', 'artificial', 'synthetic', 'generated', 'deepfake', '1', 'label_1',
+  'ai_generated', 'fake_image', 'other_ai',
+]);
 
 const LOCAL_API = process.env.LOCAL_PREDICT_URL || 'http://127.0.0.1:5328/api/predict';
 
@@ -29,55 +45,80 @@ interface HFLabel {
   score: number;
 }
 
-function normalizeLabel(label: string): boolean {
-  const l = label.toLowerCase();
-  return (
-    l.includes('ai') ||
-    l.includes('fake') ||
-    l.includes('generated') ||
-    l.includes('synthetic') ||
-    l.includes('artificial') ||
-    l === '1' ||
-    l === 'fake_image' ||
-    l === 'ai_generated'
-  );
+function classifyLabel(label: string): 'ai' | 'real' | 'unknown' {
+  const l = label.toLowerCase().trim();
+
+  if (REAL_LABELS.has(l)) return 'real';
+  if (AI_LABELS.has(l)) return 'ai';
+
+  if (l.includes('real') || l.includes('human') || l === 'hum') return 'real';
+  if (l.includes('fake') || l.includes('artificial') || l.includes('synthetic') || l.includes('generated')) {
+    return 'ai';
+  }
+  if (l === 'ai' || /\bai\b/.test(l)) return 'ai';
+
+  return 'unknown';
+}
+
+function extractLabelItems(data: unknown): HFLabel[] {
+  if (!data) return [];
+
+  if (Array.isArray(data)) {
+    if (data.length && typeof data[0] === 'object' && data[0] !== null && 'label' in data[0]) {
+      return data as HFLabel[];
+    }
+    if (Array.isArray(data[0])) return extractLabelItems(data[0]);
+    return [];
+  }
+
+  if (typeof data === 'object' && data !== null) {
+    const obj = data as Record<string, unknown>;
+    if (obj.error) return [];
+    if (obj.binary_head) return extractLabelItems(obj.binary_head);
+    if (obj.predictions) return extractLabelItems(obj.predictions);
+    if (typeof obj.label === 'string' && typeof obj.score === 'number') {
+      return [{ label: obj.label, score: obj.score }];
+    }
+  }
+
+  return [];
 }
 
 function parseHFResponse(data: unknown): { isAI: boolean; confidence: number } | null {
   if (!data) return null;
 
-  if (Array.isArray(data)) {
-    const items = data as HFLabel[];
-    if (items.length && typeof items[0] === 'object' && items[0] !== null && 'label' in items[0]) {
-      const aiItem = items.find((i) => normalizeLabel(String(i.label)));
-      const realItem = items.find((i) => !normalizeLabel(String(i.label)));
-      if (aiItem && realItem) {
-        const isAI = aiItem.score >= realItem.score;
-        const confidence = Math.round((isAI ? aiItem.score : realItem.score) * 1000) / 10;
-        return { isAI, confidence: Math.min(99.9, Math.max(50, confidence)) };
-      }
-      const top = items[0];
-      const isAI = normalizeLabel(String(top.label));
-      return { isAI, confidence: Math.round(top.score * 1000) / 10 };
-    }
-    if (Array.isArray(data[0])) return parseHFResponse(data[0]);
-  }
-
-  if (typeof data === 'object' && data !== null) {
+  if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
     const obj = data as Record<string, unknown>;
-    if (obj.error) return null;
-    if (obj.binary_head) return parseHFResponse(obj.binary_head);
-    if (obj.predictions) return parseHFResponse(obj.predictions);
     if (typeof obj.is_ai === 'boolean') {
       const conf = Number(obj.confidence ?? obj.score ?? 80);
       return { isAI: obj.is_ai, confidence: conf <= 1 ? Math.round(conf * 1000) / 10 : conf };
     }
-    if (typeof obj.label === 'string' && typeof obj.score === 'number') {
-      return { isAI: normalizeLabel(obj.label), confidence: Math.round(obj.score * 1000) / 10 };
-    }
   }
 
-  return null;
+  const items = extractLabelItems(data);
+  if (!items.length) return null;
+
+  let aiScore = 0;
+  let realScore = 0;
+  for (const item of items) {
+    const kind = classifyLabel(String(item.label));
+    if (kind === 'ai') aiScore += item.score;
+    else if (kind === 'real') realScore += item.score;
+  }
+
+  if (aiScore === 0 && realScore === 0) {
+    const top = [...items].sort((a, b) => b.score - a.score)[0];
+    const kind = classifyLabel(String(top.label));
+    if (kind === 'unknown') return null;
+    return { isAI: kind === 'ai', confidence: Math.round(top.score * 1000) / 10 };
+  }
+
+  const total = aiScore + realScore;
+  const aiRatio = total > 0 ? aiScore / total : 0;
+  const isAI = aiRatio >= AI_THRESHOLD;
+  const confidence = Math.round((isAI ? aiRatio : 1 - aiRatio) * 1000) / 10;
+
+  return { isAI, confidence: Math.min(99.9, Math.max(1, confidence)) };
 }
 
 async function sleep(ms: number) {
@@ -144,30 +185,41 @@ async function callHFModel(model: string, imageBytes: Buffer, token?: string, at
 
 async function detectWithHuggingFace(imageBase64: string, token?: string): Promise<DetectionResponse> {
   const imageBytes = Buffer.from(imageBase64, 'base64');
-  let lastError: Error | null = null;
 
-  for (const model of HF_MODELS) {
-    try {
-      const data = await callHFModel(model, imageBytes, token);
-      const parsed = parseHFResponse(data);
-      if (!parsed) continue;
+  const results = await Promise.all(
+    HF_MODELS.map(async (model) => {
+      try {
+        const data = await callHFModel(model, imageBytes, token);
+        const parsed = parseHFResponse(data);
+        return parsed ? { model, ...parsed } : null;
+      } catch {
+        return null;
+      }
+    })
+  );
 
-      const { isAI, confidence } = parsed;
-      return {
-        success: true,
-        isAI,
-        confidence,
-        prediction: isAI ? 'AI-Generated' : 'Real',
-        details: isAI
-          ? `Detected signs of AI-generated imagery (${confidence}% confidence).`
-          : `Appears to be authentic photography (${confidence}% confidence).`,
-      };
-    } catch (e) {
-      lastError = e instanceof Error ? e : new Error('HF API failed');
-    }
+  const valid = results.filter((r): r is NonNullable<typeof r> => r !== null);
+  if (!valid.length) {
+    throw new Error('All detection models failed');
   }
 
-  throw lastError || new Error('All detection models failed');
+  const aiVotes = valid.filter((r) => r.isAI).length;
+  const realVotes = valid.length - aiVotes;
+  const isAI = aiVotes > realVotes;
+
+  const agreeing = valid.filter((r) => r.isAI === isAI);
+  const confidence =
+    Math.round((agreeing.reduce((sum, r) => sum + r.confidence, 0) / agreeing.length) * 10) / 10;
+
+  return {
+    success: true,
+    isAI,
+    confidence: Math.min(99.9, Math.max(1, confidence)),
+    prediction: isAI ? 'AI-Generated' : 'Real',
+    details: isAI
+      ? `This image shows signs of AI generation (${confidence}% confidence).`
+      : `This image appears to be a real photograph (${confidence}% confidence).`,
+  };
 }
 
 function runPythonPredict(imageBase64: string): Promise<string> {
