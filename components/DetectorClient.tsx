@@ -20,8 +20,7 @@ export default function DetectorClient() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [validation, setValidation] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
-  const [activeStep, setActiveStep] = useState(-1);
-  const [doneSteps, setDoneSteps] = useState<number[]>([]);
+  const [statusText, setStatusText] = useState('');
   const [result, setResult] = useState<Awaited<ReturnType<typeof analyzeImage>> | null>(null);
   const [error, setError] = useState('');
   const { show, ToastContainer } = useToast();
@@ -50,8 +49,7 @@ export default function DetectorClient() {
     setResult(null);
     setError('');
     setAnalyzing(false);
-    setActiveStep(-1);
-    setDoneSteps([]);
+    setStatusText('');
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -63,18 +61,19 @@ export default function DetectorClient() {
     setAnalyzing(true);
     setResult(null);
     setError('');
-    setDoneSteps([]);
-    setActiveStep(0);
+    setStatusText('Preparing image...');
 
-    for (let i = 0; i < APP_CONFIG.analysisSteps.length; i++) {
-      setActiveStep(i);
-      await new Promise((r) => setTimeout(r, 350));
-      setDoneSteps((d) => [...d, i]);
-    }
-    setActiveStep(-1);
+    // Animate status while API runs in parallel
+    const steps = APP_CONFIG.analysisSteps;
+    let stepIdx = 0;
+    const stepTimer = setInterval(() => {
+      setStatusText(steps[stepIdx % steps.length]);
+      stepIdx++;
+    }, 800);
 
     try {
       const res = await analyzeImage(file);
+      clearInterval(stepTimer);
       const thumb = await createThumbnail(file);
       addHistoryItem({
         thumbnail: thumb,
@@ -87,25 +86,33 @@ export default function DetectorClient() {
       });
       setResult(res);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Analysis failed');
+      clearInterval(stepTimer);
+      const msg = e instanceof Error ? e.message : 'Analysis failed';
+      setError(msg);
+      show(msg, 'error');
     } finally {
       setAnalyzing(false);
+      setStatusText('');
     }
   };
 
-  const showResults = analyzing || result || error;
+  const phase = result ? 'result' : error ? 'error' : analyzing ? 'analyzing' : file ? 'preview' : 'empty';
 
   return (
     <>
       <ToastContainer />
-      <div className="detect-flow">
-        {!file && !showResults && (
-          <div className="detect-empty">
-            <div className="detect-empty-icon" aria-hidden="true">
+      <div className="detect-app">
+        {/* Empty state */}
+        {phase === 'empty' && (
+          <div className="detect-hero-card">
+            <div className="detect-hero-glow" aria-hidden="true" />
+            <div className="detect-hero-icon">
               <IconImage />
             </div>
-            <p className="detect-empty-text">Add a photo to analyze</p>
-            <p className="detect-empty-hint">PNG, JPEG, WEBP · up to 10MB</p>
+            <h2 className="detect-hero-title">Check any image</h2>
+            <p className="detect-hero-desc">
+              Instantly find out if a photo is real or AI-generated
+            </p>
 
             <input
               ref={fileInputRef}
@@ -123,114 +130,113 @@ export default function DetectorClient() {
               onChange={(e) => handleFile(e.target.files?.[0])}
             />
 
-            <div className="detect-actions">
-              <button
-                type="button"
-                className="app-action-btn"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <IconGallery />
-                <span>Gallery</span>
-              </button>
-              <button
-                type="button"
-                className="app-action-btn primary"
-                onClick={() => cameraInputRef.current?.click()}
-              >
+            <div className="detect-hero-actions">
+              <button type="button" className="detect-btn detect-btn-primary" onClick={() => cameraInputRef.current?.click()}>
                 <IconCamera />
-                <span>Camera</span>
+                <span>Take Photo</span>
+              </button>
+              <button type="button" className="detect-btn detect-btn-secondary" onClick={() => fileInputRef.current?.click()}>
+                <IconGallery />
+                <span>From Gallery</span>
               </button>
             </div>
+            <p className="detect-formats">JPEG · PNG · WEBP · max 10MB</p>
           </div>
         )}
 
-        {file && !showResults && (
-          <div className="detect-preview">
-            <div className="preview-frame">
-              {previewUrl && (
-                <img src={previewUrl} alt="Selected" className="preview-image" />
+        {/* Preview + analyze */}
+        {(phase === 'preview' || phase === 'analyzing') && previewUrl && (
+          <div className="detect-preview-card">
+            <div className="detect-image-wrap">
+              <img src={previewUrl} alt="Selected" className="detect-image" />
+              {phase === 'analyzing' && (
+                <div className="detect-overlay">
+                  <div className="detect-overlay-spinner" />
+                  <p>{statusText}</p>
+                </div>
               )}
             </div>
-            <div className="preview-info">
-              <span className="preview-name">{file.name}</span>
-              <span className="preview-size">{formatFileSize(file.size)}</span>
+            <div className="detect-file-chip">
+              <span className="detect-file-name">{file?.name}</span>
+              <span className="detect-file-size">{file && formatFileSize(file.size)}</span>
             </div>
-            <button type="button" className="preview-change" onClick={reset}>
-              Choose different photo
-            </button>
+            {phase === 'preview' && (
+              <div className="detect-preview-actions">
+                <button type="button" className="detect-btn detect-btn-primary detect-btn-full" onClick={runAnalysis}>
+                  Analyze Image
+                </button>
+                <button type="button" className="detect-btn detect-btn-text" onClick={reset}>
+                  Choose another
+                </button>
+              </div>
+            )}
           </div>
         )}
 
-        {analyzing && !result && !error && (
-          <div className="detect-status" aria-live="polite">
-            <div className="status-spinner" aria-hidden="true" />
-            <p className="status-label">
-              {APP_CONFIG.analysisSteps[activeStep >= 0 ? activeStep : 0]}
-            </p>
-            <div className="status-steps">
-              {APP_CONFIG.analysisSteps.map((_, i) => (
-                <span
-                  key={i}
-                  className={`status-dot${doneSteps.includes(i) ? ' done' : ''}${activeStep === i ? ' active' : ''}`}
-                />
-              ))}
+        {/* Result */}
+        {phase === 'result' && result && previewUrl && (
+          <div className={`detect-result-card ${result.isAI ? 'ai' : 'real'}`}>
+            <div className="detect-result-image-wrap">
+              <img src={previewUrl} alt="" className="detect-result-thumb" />
+              <div className={`detect-result-badge ${result.isAI ? 'ai' : 'real'}`}>
+                {result.isAI ? 'AI' : 'REAL'}
+              </div>
+            </div>
+
+            <div className="detect-result-body">
+              <h2 className="detect-result-title">
+                {result.isAI ? 'AI Generated' : 'Real Photo'}
+              </h2>
+              <p className="detect-result-sub">
+                {result.isAI
+                  ? 'This image shows signs of AI generation'
+                  : 'This image appears authentic'}
+              </p>
+
+              <div className="detect-confidence">
+                <div className="detect-confidence-header">
+                  <span>Confidence</span>
+                  <strong>{result.confidence}%</strong>
+                </div>
+                <div className="detect-confidence-track">
+                  <div
+                    className="detect-confidence-fill"
+                    style={{ width: `${result.confidence}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="detect-result-actions">
+                <button type="button" className="detect-btn detect-btn-primary detect-btn-full" onClick={reset}>
+                  Scan Another
+                </button>
+                <Link href="/history" className="detect-btn detect-btn-secondary detect-btn-full">
+                  View History
+                </Link>
+              </div>
             </div>
           </div>
         )}
 
-        {result && (
-          <div className={`detect-result${result.isAI ? ' is-ai' : ' is-real'}`}>
-            <div className="result-verdict">
-              <span className="result-icon" aria-hidden="true">
-                {result.isAI ? '✦' : '✓'}
-              </span>
-              <h2>{result.isAI ? 'AI Generated' : 'Real'}</h2>
-              <p className="result-conf">{result.confidence}% confidence</p>
-            </div>
-            <div className="result-bar">
-              <div className="result-bar-fill" style={{ width: `${result.confidence}%` }} />
-            </div>
-            <div className="result-details-grid">
-              <div><span>Analysis</span><strong>{result.duration}ms</strong></div>
-              <div><span>Confidence</span><strong>{result.confidence}%</strong></div>
-            </div>
-            <div className="detect-actions vertical">
-              <button type="button" className="app-action-btn primary full" onClick={reset}>
-                Scan Another
-              </button>
-              <Link href="/history" className="app-action-btn full">
-                View History
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="detect-error" role="alert">
-            <span className="error-icon" aria-hidden="true">!</span>
-            <h3>Something went wrong</h3>
+        {/* Error */}
+        {phase === 'error' && (
+          <div className="detect-error-card">
+            <div className="detect-error-icon">!</div>
+            <h3>Couldn&apos;t analyze image</h3>
             <p>{error}</p>
-            <button type="button" className="app-action-btn primary full" onClick={runAnalysis}>
-              Try Again
+            {error.includes('HF_API_TOKEN') && (
+              <p className="detect-error-hint">
+                Create <code>.env.local</code> in the project root with your free token, then restart <code>npm run dev</code>.
+              </p>
+            )}
+            <button type="button" className="detect-btn detect-btn-primary detect-btn-full" onClick={file ? runAnalysis : reset}>
+              {file ? 'Try Again' : 'Start Over'}
             </button>
           </div>
         )}
 
-        {validation && <p className="detect-validation" role="alert">{validation}</p>}
+        {validation && <p className="detect-validation">{validation}</p>}
       </div>
-
-      {file && !showResults && (
-        <div className="app-fab-bar">
-          <button
-            type="button"
-            className="app-fab"
-            onClick={runAnalysis}
-            disabled={analyzing}
-          >
-            Analyze
-          </button>
-        </div>
-      )}
     </>
   );
 }

@@ -1,10 +1,17 @@
 /**
- * Server-side AI image detection via Hugging Face Inference API.
- * Runs under the hood — not exposed to the frontend user.
+ * Server-side AI image detection.
+ * Priority: Hugging Face API → local Python model → clear error
  */
 
-const HF_MODEL = process.env.HF_DETECTION_MODEL || 'boluobobo/ItsNotAI-ai-detector-v2';
-const HF_FALLBACK_MODEL = 'dima806/ai_vs_real_image_detection';
+import { spawn } from 'child_process';
+import path from 'path';
+
+const HF_MODELS = [
+  process.env.HF_DETECTION_MODEL || 'dima806/ai_vs_real_image_detection',
+  'boluobobo/ItsNotAI-ai-detector-v2',
+  'umm-maybe/AI-image-detector',
+];
+
 const LOCAL_API = process.env.LOCAL_PREDICT_URL || 'http://127.0.0.1:5328/api/predict';
 
 export interface DetectionResponse {
@@ -27,111 +34,183 @@ function normalizeLabel(label: string): boolean {
     l.includes('fake') ||
     l.includes('generated') ||
     l.includes('synthetic') ||
-    l === '1'
+    l.includes('artificial') ||
+    l === '1' ||
+    l === 'fake_image' ||
+    l === 'ai_generated'
   );
 }
 
 function parseHFResponse(data: unknown): { isAI: boolean; confidence: number } | null {
   if (!data) return null;
 
-  // Array of {label, score}
   if (Array.isArray(data)) {
     const items = data as HFLabel[];
-    if (items.length && 'label' in items[0] && 'score' in items[0]) {
-      const aiItem = items.find((i) => normalizeLabel(i.label));
-      const realItem = items.find((i) => !normalizeLabel(i.label));
+    if (items.length && typeof items[0] === 'object' && items[0] !== null && 'label' in items[0]) {
+      const aiItem = items.find((i) => normalizeLabel(String(i.label)));
+      const realItem = items.find((i) => !normalizeLabel(String(i.label)));
       if (aiItem && realItem) {
         const isAI = aiItem.score >= realItem.score;
         const confidence = Math.round((isAI ? aiItem.score : realItem.score) * 1000) / 10;
-        return { isAI, confidence };
+        return { isAI, confidence: Math.min(99.9, Math.max(50, confidence)) };
       }
       const top = items[0];
-      const isAI = normalizeLabel(top.label);
+      const isAI = normalizeLabel(String(top.label));
       return { isAI, confidence: Math.round(top.score * 1000) / 10 };
     }
-
-    // Nested array
-    if (Array.isArray(data[0])) {
-      return parseHFResponse(data[0]);
-    }
+    if (Array.isArray(data[0])) return parseHFResponse(data[0]);
   }
 
-  // Object with binary / multi-class heads (ItsNotAI v2 style)
   if (typeof data === 'object' && data !== null) {
     const obj = data as Record<string, unknown>;
-
-    if (obj.binary_head && Array.isArray(obj.binary_head)) {
-      return parseHFResponse(obj.binary_head);
-    }
-    if (obj.predictions && Array.isArray(obj.predictions)) {
-      return parseHFResponse(obj.predictions);
-    }
+    if (obj.error) return null;
+    if (obj.binary_head) return parseHFResponse(obj.binary_head);
+    if (obj.predictions) return parseHFResponse(obj.predictions);
     if (typeof obj.is_ai === 'boolean') {
-      return {
-        isAI: obj.is_ai,
-        confidence: Math.round(Number(obj.confidence ?? obj.score ?? 0.85) * (Number(obj.confidence) <= 1 ? 100 : 1) * 10) / 10,
-      };
+      const conf = Number(obj.confidence ?? obj.score ?? 80);
+      return { isAI: obj.is_ai, confidence: conf <= 1 ? Math.round(conf * 1000) / 10 : conf };
     }
     if (typeof obj.label === 'string' && typeof obj.score === 'number') {
-      const isAI = normalizeLabel(obj.label);
-      return { isAI, confidence: Math.round(obj.score * 1000) / 10 };
+      return { isAI: normalizeLabel(obj.label), confidence: Math.round(obj.score * 1000) / 10 };
     }
   }
 
   return null;
 }
 
-async function callHFModel(model: string, imageBytes: Buffer, token: string): Promise<unknown> {
-  const url = `https://api-inference.huggingface.co/models/${model}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/octet-stream',
-    },
-    body: new Uint8Array(imageBytes),
-    signal: AbortSignal.timeout(45000),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '');
-    throw new Error(`Detection API error (${res.status}): ${errText.slice(0, 200)}`);
-  }
-
-  return res.json();
+async function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
-async function detectWithHuggingFace(imageBase64: string): Promise<DetectionResponse> {
-  const token = process.env.HF_API_TOKEN;
-  if (!token) throw new Error('HF_API_TOKEN not configured');
+async function callHFModel(model: string, imageBytes: Buffer, token?: string, attempt = 0): Promise<unknown> {
+  const endpoints = [
+    `https://router.huggingface.co/hf-inference/models/${model}`,
+    `https://api-inference.huggingface.co/models/${model}`,
+  ];
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/octet-stream',
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
 
+  let lastError: Error | null = null;
+
+  for (const url of endpoints) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: new Uint8Array(imageBytes),
+        signal: AbortSignal.timeout(60000),
+      });
+
+      const text = await res.text();
+      let data: unknown;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Invalid API response (${res.status})`);
+      }
+
+      if (res.status === 503 && attempt < 3) {
+        const wait = ((data as { estimated_time?: number })?.estimated_time ?? 5) * 1000;
+        await sleep(Math.min(wait, 15000));
+        return callHFModel(model, imageBytes, token, attempt + 1);
+      }
+
+      if (!res.ok) {
+        const msg = (data as { error?: string })?.error || text.slice(0, 150);
+        throw new Error(msg);
+      }
+
+      return data;
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error('HF request failed');
+    }
+  }
+
+  throw lastError || new Error('HF API unavailable');
+}
+
+async function detectWithHuggingFace(imageBase64: string, token?: string): Promise<DetectionResponse> {
   const imageBytes = Buffer.from(imageBase64, 'base64');
+  let lastError: Error | null = null;
 
-  let data: unknown;
-  try {
-    data = await callHFModel(HF_MODEL, imageBytes, token);
-  } catch {
-    data = await callHFModel(HF_FALLBACK_MODEL, imageBytes, token);
+  for (const model of HF_MODELS) {
+    try {
+      const data = await callHFModel(model, imageBytes, token);
+      const parsed = parseHFResponse(data);
+      if (!parsed) continue;
+
+      const { isAI, confidence } = parsed;
+      return {
+        success: true,
+        isAI,
+        confidence,
+        prediction: isAI ? 'AI-Generated' : 'Real',
+        details: isAI
+          ? `Detected signs of AI-generated imagery (${confidence}% confidence).`
+          : `Appears to be authentic photography (${confidence}% confidence).`,
+      };
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error('HF API failed');
+    }
   }
 
-  const parsed = parseHFResponse(data);
-  if (!parsed) {
-    throw new Error('Could not parse detection response');
-  }
+  throw lastError || new Error('All detection models failed');
+}
 
-  const { isAI, confidence } = parsed;
+function runPythonPredict(imageBase64: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(process.cwd(), 'scripts', 'predict.py');
+    const proc = spawn('python', [scriptPath], { windowsHide: true });
+    let stdout = '';
+    let stderr = '';
+    const timer = setTimeout(() => {
+      proc.kill();
+      reject(new Error('Local model timed out'));
+    }, 45000);
+
+    proc.stdout.on('data', (chunk: Buffer | string) => {
+      stdout += chunk.toString();
+    });
+    proc.stderr.on('data', (chunk: Buffer | string) => {
+      stderr += chunk.toString();
+    });
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+    proc.on('close', (code) => {
+      clearTimeout(timer);
+      if (code !== 0) {
+        reject(new Error(stderr.trim() || `Python script exited with code ${code}`));
+        return;
+      }
+      resolve(stdout);
+    });
+
+    proc.stdin.write(JSON.stringify({ image: imageBase64 }));
+    proc.stdin.end();
+  });
+}
+
+async function detectWithPythonScript(imageBase64: string): Promise<DetectionResponse> {
+  const stdout = await runPythonPredict(imageBase64);
+
+  const data = JSON.parse(stdout.trim());
+  if (data.error) throw new Error(data.message || data.error);
+
+  const isAI = data.isAI ?? data.prediction === 'AI-Generated';
   return {
     success: true,
     isAI,
-    confidence,
-    prediction: isAI ? 'AI-Generated' : 'Real',
-    details: isAI
-      ? `Our analysis detected patterns consistent with AI-generated imagery (${confidence}% confidence).`
-      : `Our analysis indicates this appears to be authentic photography (${confidence}% confidence).`,
+    confidence: data.confidence,
+    prediction: data.prediction,
+    details: data.details,
   };
 }
 
-async function detectWithLocalFallback(imageBase64: string): Promise<DetectionResponse> {
+async function detectWithLocalServer(imageBase64: string): Promise<DetectionResponse> {
   const res = await fetch(LOCAL_API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -141,39 +220,48 @@ async function detectWithLocalFallback(imageBase64: string): Promise<DetectionRe
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { message?: string }).message || 'Local detection unavailable');
+    throw new Error((err as { message?: string }).message || 'Local server unavailable');
   }
 
   const data = await res.json();
+  const isAI = data.isAI ?? data.prediction === 'AI-Generated';
   return {
     success: true,
-    isAI: data.isAI ?? data.prediction === 'AI-Generated',
+    isAI,
     confidence: data.confidence,
     prediction: data.prediction,
-    details: data.details || (data.isAI
-      ? `Analysis suggests AI-generated content (${data.confidence}% confidence).`
-      : `Analysis suggests authentic content (${data.confidence}% confidence).`),
+    details: data.details,
   };
 }
 
 export async function detectImage(imageBase64: string): Promise<DetectionResponse> {
-  if (process.env.HF_API_TOKEN) {
-    try {
-      return await detectWithHuggingFace(imageBase64);
-    } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('[Detection] HF API failed, trying local fallback:', err);
-        return detectWithLocalFallback(imageBase64);
-      }
-      throw err;
-    }
+  const errors: string[] = [];
+  const token = process.env.HF_API_TOKEN?.trim() || process.env.HF_TOKEN?.trim();
+
+  // 1. Hugging Face API (token if available, otherwise anonymous rate-limited)
+  try {
+    return await detectWithHuggingFace(imageBase64, token || undefined);
+  } catch (e) {
+    errors.push(`Cloud API: ${e instanceof Error ? e.message : 'failed'}`);
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    return detectWithLocalFallback(imageBase64);
+  // 2. Local Python script (trained model)
+  try {
+    return await detectWithPythonScript(imageBase64);
+  } catch (e) {
+    errors.push(`Local model: ${e instanceof Error ? e.message : 'failed'}`);
+  }
+
+  // 3. Local dev server
+  try {
+    return await detectWithLocalServer(imageBase64);
+  } catch (e) {
+    errors.push(`Dev server: ${e instanceof Error ? e.message : 'failed'}`);
   }
 
   throw new Error(
-    'Detection service not configured. Set HF_API_TOKEN in environment variables.'
+    token
+      ? `Detection failed. ${errors.join(' · ')}`
+      : 'Detection is not configured yet. Create a free Hugging Face token, add HF_API_TOKEN to .env.local, then restart the app. Get a token at huggingface.co/settings/tokens'
   );
 }
