@@ -1,10 +1,12 @@
 /**
  * Server-side AI image detection.
- * Priority: Hugging Face API → local Python model → clear error
+ * Production (Vercel): Hugging Face API only
+ * Local dev: HF API → Python script → local dev server
  */
 
-import { spawn } from 'child_process';
 import path from 'path';
+
+const IS_VERCEL = !!process.env.VERCEL;
 
 const HF_MODELS = [
   process.env.HF_DETECTION_MODEL || 'dima806/ai_vs_real_image_detection',
@@ -82,6 +84,15 @@ async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+function fetchTimeout(ms: number): AbortSignal {
+  if (typeof AbortSignal.timeout === 'function') {
+    return AbortSignal.timeout(ms);
+  }
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 async function callHFModel(model: string, imageBytes: Buffer, token?: string, attempt = 0): Promise<unknown> {
   const endpoints = [
     `https://router.huggingface.co/hf-inference/models/${model}`,
@@ -100,7 +111,7 @@ async function callHFModel(model: string, imageBytes: Buffer, token?: string, at
         method: 'POST',
         headers,
         body: new Uint8Array(imageBytes),
-        signal: AbortSignal.timeout(60000),
+        signal: fetchTimeout(60000),
       });
 
       const text = await res.text();
@@ -161,36 +172,39 @@ async function detectWithHuggingFace(imageBase64: string, token?: string): Promi
 
 function runPythonPredict(imageBase64: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(process.cwd(), 'scripts', 'predict.py');
-    const proc = spawn('python', [scriptPath], { windowsHide: true });
-    let stdout = '';
-    let stderr = '';
-    const timer = setTimeout(() => {
-      proc.kill();
-      reject(new Error('Local model timed out'));
-    }, 45000);
+    // Dynamic import — child_process is not available on Vercel serverless
+    import('child_process').then(({ spawn }) => {
+      const scriptPath = path.join(process.cwd(), 'scripts', 'predict.py');
+      const proc = spawn('python', [scriptPath], { windowsHide: true });
+      let stdout = '';
+      let stderr = '';
+      const timer = setTimeout(() => {
+        proc.kill();
+        reject(new Error('Local model timed out'));
+      }, 45000);
 
-    proc.stdout.on('data', (chunk: Buffer | string) => {
-      stdout += chunk.toString();
-    });
-    proc.stderr.on('data', (chunk: Buffer | string) => {
-      stderr += chunk.toString();
-    });
-    proc.on('error', (err) => {
-      clearTimeout(timer);
-      reject(err);
-    });
-    proc.on('close', (code) => {
-      clearTimeout(timer);
-      if (code !== 0) {
-        reject(new Error(stderr.trim() || `Python script exited with code ${code}`));
-        return;
-      }
-      resolve(stdout);
-    });
+      proc.stdout.on('data', (chunk: Buffer | string) => {
+        stdout += chunk.toString();
+      });
+      proc.stderr.on('data', (chunk: Buffer | string) => {
+        stderr += chunk.toString();
+      });
+      proc.on('error', (err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+      proc.on('close', (code) => {
+        clearTimeout(timer);
+        if (code !== 0) {
+          reject(new Error(stderr.trim() || `Python script exited with code ${code}`));
+          return;
+        }
+        resolve(stdout);
+      });
 
-    proc.stdin.write(JSON.stringify({ image: imageBase64 }));
-    proc.stdin.end();
+      proc.stdin.write(JSON.stringify({ image: imageBase64 }));
+      proc.stdin.end();
+    }).catch(reject);
   });
 }
 
@@ -215,7 +229,7 @@ async function detectWithLocalServer(imageBase64: string): Promise<DetectionResp
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: imageBase64 }),
-    signal: AbortSignal.timeout(30000),
+    signal: fetchTimeout(30000),
   });
 
   if (!res.ok) {
@@ -238,21 +252,31 @@ export async function detectImage(imageBase64: string): Promise<DetectionRespons
   const errors: string[] = [];
   const token = process.env.HF_API_TOKEN?.trim() || process.env.HF_TOKEN?.trim();
 
-  // 1. Hugging Face API (token if available, otherwise anonymous rate-limited)
+  if (IS_VERCEL && !token) {
+    throw new Error(
+      'Server not configured. Add HF_API_TOKEN in Vercel → Project Settings → Environment Variables, then redeploy.'
+    );
+  }
+
+  // 1. Hugging Face API
   try {
     return await detectWithHuggingFace(imageBase64, token || undefined);
   } catch (e) {
     errors.push(`Cloud API: ${e instanceof Error ? e.message : 'failed'}`);
   }
 
-  // 2. Local Python script (trained model)
+  if (IS_VERCEL) {
+    throw new Error(`Detection failed. ${errors.join(' · ')}`);
+  }
+
+  // 2. Local Python script (trained model) — dev only
   try {
     return await detectWithPythonScript(imageBase64);
   } catch (e) {
     errors.push(`Local model: ${e instanceof Error ? e.message : 'failed'}`);
   }
 
-  // 3. Local dev server
+  // 3. Local dev server — dev only
   try {
     return await detectWithLocalServer(imageBase64);
   } catch (e) {
@@ -262,6 +286,6 @@ export async function detectImage(imageBase64: string): Promise<DetectionRespons
   throw new Error(
     token
       ? `Detection failed. ${errors.join(' · ')}`
-      : 'Detection is not configured yet. Create a free Hugging Face token, add HF_API_TOKEN to .env.local, then restart the app. Get a token at huggingface.co/settings/tokens'
+      : 'Detection is not configured yet. Add HF_API_TOKEN to .env.local (local) or Vercel env vars (production).'
   );
 }

@@ -19,7 +19,7 @@ def main():
 
         from logistic import AIDetectionModel
 
-        model_path = os.path.join(ROOT, 'api', 'ai_detector_model.pkl')
+        model_path = os.path.join(ROOT, 'python-local', 'ai_detector_model.pkl')
         if not os.path.exists(model_path):
             model_path = os.path.join(ROOT, 'Model', 'ai_detector_model.pkl')
 

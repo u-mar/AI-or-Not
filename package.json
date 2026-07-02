@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:full": "concurrently -n next,api -c blue,green \"next dev\" \"python api/dev_server.py\"",
-    "dev:api": "python api/dev_server.py",
+    "dev:full": "concurrently -n next,api -c blue,green \"next dev\" \"python python-local/dev_server.py\"",
+    "dev:api": "python python-local/dev_server.py",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

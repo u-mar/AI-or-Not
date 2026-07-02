@@ -33,7 +33,10 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Analysis failed';
     console.error('[predict]', message);
-    const isSetupError = message.includes('HF_API_TOKEN') || message.includes('not configured');
+    const isSetupError =
+      message.includes('HF_API_TOKEN') ||
+      message.includes('not configured') ||
+      message.includes('Server not configured');
     return NextResponse.json(
       { error: isSetupError ? 'Detection not configured' : 'Analysis failed', message },
       { status: isSetupError ? 503 : 500 }

@@ -19,7 +19,7 @@ except ImportError:
     print('[WARN] Could not import logistic model. Run: pip install -r Model/requirements.txt')
 
 PORT = int(os.environ.get('API_PORT', '5328'))
-MODEL_PATH = os.path.join(ROOT, 'api', 'ai_detector_model.pkl')
+MODEL_PATH = os.path.join(ROOT, 'python-local', 'ai_detector_model.pkl')
 _detector = None
 
 
