@@ -1456,6 +1456,21 @@ body {
   box-shadow: var(--shadow-sm);
 }
 .login-form { display: flex; flex-direction: column; gap: 0.25rem; }
+.login-submit-btn {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 0.5rem;
+  border-radius: 14px;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(94, 123, 255, 0.28);
+}
+.login-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 .login-note {
   margin-top: 1.25rem;
   font-size: 0.75rem;

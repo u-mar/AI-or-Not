@@ -75,7 +75,7 @@ export default function DetectorClient() {
       const res = await analyzeImage(file);
       clearInterval(stepTimer);
       const thumb = await createThumbnail(file);
-      addHistoryItem({
+      await addHistoryItem({
         thumbnail: thumb,
         prediction: res.prediction,
         isAI: res.isAI,

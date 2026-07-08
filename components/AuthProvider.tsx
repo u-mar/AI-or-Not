@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import {
   getSession,
+  hydrateSession,
   isMobileDevice,
   login as authLogin,
   logout as authLogout,
@@ -30,7 +31,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsMobile(isMobileDevice());
     setSession(getSession());
-    setLoading(false);
+    hydrateSession()
+      .then((nextSession) => setSession(nextSession))
+      .finally(() => setLoading(false));
 
     const onResize = () => setIsMobile(isMobileDevice());
     window.addEventListener('resize', onResize);
@@ -52,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    authLogout();
+    void authLogout();
     setSession(null);
   }, []);
 

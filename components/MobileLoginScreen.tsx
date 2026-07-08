@@ -103,13 +103,13 @@ export default function MobileLoginScreen() {
             <div className="validation-msg error" role="alert">{error}</div>
           )}
 
-          <button type="submit" className="app-fab" disabled={loading} style={{ position: 'static', boxShadow: 'none' }}>
+          <button type="submit" className="login-submit-btn" disabled={loading}>
             {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
         <p className="login-note">
-          Account data is stored on this device only.
+          Your account, history, and settings sync with MongoDB when you sign in.
         </p>
       </div>
     </div>

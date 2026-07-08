@@ -7,9 +7,9 @@ import { useAuth } from '@/components/AuthProvider';
 import {
   applyTheme,
   clearHistory,
-  getHistory,
   getHistoryStats,
-  getSettings,
+  loadHistory,
+  loadSettings,
   saveSettings,
 } from '@/lib/storage';
 import { useToast } from './useToast';
@@ -22,15 +22,18 @@ export default function SettingsClient() {
   const { session, logout } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
   const [stats, setStats] = useState({ total: 0, aiCount: 0, realCount: 0, avgConfidence: 0 });
-  const [recentScans, setRecentScans] = useState(getHistory().slice(0, 3));
+  const [recentScans, setRecentScans] = useState<Awaited<ReturnType<typeof loadHistory>>>([]);
   const { show, ToastContainer } = useToast();
 
   useEffect(() => {
-    const s = getSettings();
-    setDarkMode(s.theme === 'dark');
-    setStats(getHistoryStats());
-    setRecentScans(getHistory().slice(0, 3));
-  }, []);
+    void (async () => {
+      const settings = await loadSettings();
+      const history = await loadHistory();
+      setDarkMode(settings.theme === 'dark');
+      setStats(getHistoryStats(history));
+      setRecentScans(history.slice(0, 3));
+    })();
+  }, [session?.userId]);
 
   const initial = session?.name?.charAt(0).toUpperCase() || '?';
 
@@ -107,9 +110,9 @@ export default function SettingsClient() {
                 <input
                   type="checkbox"
                   checked={darkMode}
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const theme = e.target.checked ? 'dark' : 'light';
-                    saveSettings({ theme });
+                    await saveSettings({ theme });
                     applyTheme(theme);
                     setDarkMode(e.target.checked);
                   }}
@@ -127,10 +130,10 @@ export default function SettingsClient() {
             <button
               type="button"
               className="settings-menu-item settings-menu-btn"
-              onClick={() => {
+              onClick={async () => {
                 if (confirm('Clear all scan history?')) {
-                  clearHistory();
-                  setStats(getHistoryStats());
+                  await clearHistory();
+                  setStats(getHistoryStats([]));
                   setRecentScans([]);
                   show('History cleared');
                 }

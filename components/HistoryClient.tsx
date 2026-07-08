@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import {
   clearHistory,
   deleteHistoryItem,
-  getHistory,
+  loadHistory,
   getHistoryStats,
 } from '@/lib/storage';
 import type { HistoryItem } from '@/lib/config';
@@ -25,8 +25,8 @@ export default function HistoryClient() {
   const [stats, setStats] = useState(getHistoryStats());
   const { show, ToastContainer } = useToast();
 
-  const refresh = (filter = query) => {
-    let history = getHistory();
+  const refresh = async (filter = query) => {
+    let history = await loadHistory();
     const q = filter.toLowerCase().trim();
     if (q) {
       history = history.filter(
@@ -41,7 +41,7 @@ export default function HistoryClient() {
   };
 
   useEffect(() => {
-    refresh('');
+    void refresh('');
   }, []);
 
   return (
@@ -61,16 +61,16 @@ export default function HistoryClient() {
           placeholder="Search by prediction, filename, or date..."
           aria-label="Search history"
           value={query}
-          onChange={(e) => { setQuery(e.target.value); refresh(e.target.value); }}
+          onChange={(e) => { setQuery(e.target.value); void refresh(e.target.value); }}
         />
         <button
           type="button"
           className="btn btn-ghost"
-          onClick={() => {
-            if (getHistory().length && confirm('Clear all scan history?')) {
-              clearHistory();
+          onClick={async () => {
+            if (items.length && confirm('Clear all scan history?')) {
+              await clearHistory();
               show('History cleared');
-              refresh('');
+              await refresh('');
             }
           }}
         >
@@ -101,10 +101,10 @@ export default function HistoryClient() {
               type="button"
               className="btn-icon delete-btn"
               aria-label="Delete scan"
-              onClick={() => {
-                deleteHistoryItem(item.id);
+              onClick={async () => {
+                await deleteHistoryItem(item.id);
                 show('Scan removed');
-                refresh();
+                await refresh();
               }}
             >
               ✕
