@@ -9,18 +9,21 @@ import path from 'path';
 const IS_VERCEL = !!process.env.VERCEL;
 
 const HF_MODELS = [
-  ...new Set(
-    [
-      process.env.HF_DETECTION_MODEL,
-      'Ateeqq/ai-vs-human-image-detector',
-      'umm-maybe/AI-image-detector',
-      'dima806/ai_vs_real_image_detection',
-    ].filter((m): m is string => !!m)
-  ),
-];
+  {
+    id: process.env.HF_DETECTION_MODEL || 'Ateeqq/ai-vs-human-image-detector',
+    weight: 0.7,
+  },
+  {
+    id: 'umm-maybe/AI-image-detector',
+    weight: 0.3,
+  },
+].filter(
+  (model, index, arr) =>
+    !!model.id && arr.findIndex((item) => item.id === model.id) === index
+);
 
 /** Minimum AI score (0–1) before labeling as AI-generated */
-const AI_THRESHOLD = Number(process.env.AI_DETECTION_THRESHOLD ?? '0.58');
+const AI_THRESHOLD = Number(process.env.AI_DETECTION_THRESHOLD ?? '0.72');
 
 const REAL_LABELS = new Set([
   'real', 'human', 'hum', 'genuine', 'authentic', 'natural', 'photo', '0', 'label_0',
@@ -189,9 +192,9 @@ async function detectWithHuggingFace(imageBase64: string, token?: string): Promi
   const results = await Promise.all(
     HF_MODELS.map(async (model) => {
       try {
-        const data = await callHFModel(model, imageBytes, token);
+        const data = await callHFModel(model.id, imageBytes, token);
         const parsed = parseHFResponse(data);
-        return parsed ? { model, ...parsed } : null;
+        return parsed ? { model: model.id, weight: model.weight, ...parsed } : null;
       } catch {
         return null;
       }
@@ -203,13 +206,11 @@ async function detectWithHuggingFace(imageBase64: string, token?: string): Promi
     throw new Error('All detection models failed');
   }
 
-  const aiVotes = valid.filter((r) => r.isAI).length;
-  const realVotes = valid.length - aiVotes;
-  const isAI = aiVotes > realVotes;
-
-  const agreeing = valid.filter((r) => r.isAI === isAI);
-  const confidence =
-    Math.round((agreeing.reduce((sum, r) => sum + r.confidence, 0) / agreeing.length) * 10) / 10;
+  const totalWeight = valid.reduce((sum, item) => sum + item.weight, 0);
+  const aiWeight = valid.reduce((sum, item) => sum + (item.isAI ? item.weight : 0), 0);
+  const aiRatio = totalWeight > 0 ? aiWeight / totalWeight : 0;
+  const isAI = aiRatio >= AI_THRESHOLD;
+  const confidence = Math.round(((isAI ? aiRatio : 1 - aiRatio) * 1000)) / 10;
 
   return {
     success: true,

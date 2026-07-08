@@ -32,7 +32,6 @@ export default function MobileLoginScreen() {
         <div className="mobile-login-header">
           <span className="logo-icon mobile-login-logo" aria-hidden="true">🧠</span>
           <h1>AI or Not</h1>
-          <p>Sign in to get started</p>
         </div>
 
         <div className="login-tabs" role="tablist">
@@ -108,9 +107,6 @@ export default function MobileLoginScreen() {
           </button>
         </form>
 
-        <p className="login-note">
-          Your account, history, and settings sync with MongoDB when you sign in.
-        </p>
       </div>
     </div>
   );
