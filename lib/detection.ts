@@ -11,7 +11,11 @@ const IS_VERCEL = !!process.env.VERCEL;
 const HF_MODELS = [
   {
     id: process.env.HF_DETECTION_MODEL || 'Ateeqq/ai-vs-human-image-detector',
-    weight: 0.7,
+    weight: 0.35,
+  },
+  {
+    id: 'haywoodsloan/ai-image-detector-deploy',
+    weight: 0.35,
   },
   {
     id: 'umm-maybe/AI-image-detector',
@@ -22,8 +26,14 @@ const HF_MODELS = [
     !!model.id && arr.findIndex((item) => item.id === model.id) === index
 );
 
-/** Minimum AI score (0–1) before labeling as AI-generated */
-const AI_THRESHOLD = Number(process.env.AI_DETECTION_THRESHOLD ?? '0.72');
+/**
+ * Fraction of weighted model votes that must say "AI" for the final verdict
+ * to be AI-generated. Each model casts its own vote at the standard 0.5
+ * split (see parseHFResponse) — this is the ensemble agreement threshold,
+ * not a per-model score cutoff. Kept at 0.5 (simple majority) by default so
+ * one overconfident-but-wrong model can't outweigh two that agree.
+ */
+const AI_THRESHOLD = Number(process.env.AI_DETECTION_THRESHOLD ?? '0.5');
 
 const REAL_LABELS = new Set([
   'real', 'human', 'hum', 'genuine', 'authentic', 'natural', 'photo', '0', 'label_0',
@@ -118,7 +128,9 @@ function parseHFResponse(data: unknown): { isAI: boolean; confidence: number } |
 
   const total = aiScore + realScore;
   const aiRatio = total > 0 ? aiScore / total : 0;
-  const isAI = aiRatio >= AI_THRESHOLD;
+  // Each individual model votes at the standard 0.5 split. Ensemble
+  // agreement (AI_THRESHOLD) is applied later, across models — not here.
+  const isAI = aiRatio >= 0.5;
   const confidence = Math.round((isAI ? aiRatio : 1 - aiRatio) * 1000) / 10;
 
   return { isAI, confidence: Math.min(99.9, Math.max(1, confidence)) };
@@ -206,11 +218,20 @@ async function detectWithHuggingFace(imageBase64: string, token?: string): Promi
     throw new Error('All detection models failed');
   }
 
+  // Majority vote: each model casts a weighted vote (already decided at its
+  // own 0.5 split in parseHFResponse). This stops one overconfident-but-wrong
+  // model from dominating a naive probability average — the verdict needs
+  // agreement across models, not just one extreme score.
   const totalWeight = valid.reduce((sum, item) => sum + item.weight, 0);
   const aiWeight = valid.reduce((sum, item) => sum + (item.isAI ? item.weight : 0), 0);
-  const aiRatio = totalWeight > 0 ? aiWeight / totalWeight : 0;
-  const isAI = aiRatio >= AI_THRESHOLD;
-  const confidence = Math.round(((isAI ? aiRatio : 1 - aiRatio) * 1000)) / 10;
+  const voteFraction = totalWeight > 0 ? aiWeight / totalWeight : 0;
+  const isAI = voteFraction >= AI_THRESHOLD;
+
+  // Confidence reflects how sure the agreeing models were, not just the vote split.
+  const agreeing = valid.filter((item) => item.isAI === isAI);
+  const avgAgreeingConfidence =
+    agreeing.reduce((sum, item) => sum + item.confidence, 0) / (agreeing.length || 1);
+  const confidence = Math.round(avgAgreeingConfidence * 10) / 10;
 
   return {
     success: true,
